@@ -1,0 +1,44 @@
+local blockSlot = 1    -- Slot for replacement blocks
+local coalSlot = 16    -- Slot for coal collection
+
+while turtle.getItemCount(blockSlot) > 0 do
+    -- Refuel from chest above if low on fuel
+    if turtle.getFuelLevel() < 50 then
+        turtle.select(coalSlot)
+        turtle.suckUp(1)     -- Take coal from chest above
+        turtle.refuel(1)     -- Consume 1 coal item
+        turtle.select(blockSlot)  -- Return to block slot
+    end
+
+    -- Square movement pattern (4 sides)
+    for side = 1, 4 do
+        -- Two blocks per side
+        for block = 1, 2 do
+            -- Check and replace block below
+            local success, data = turtle.inspectDown()
+            if success then
+                if data.name == "botania:livingrock" or data.name == "botania:livingwood_log" then
+                    turtle.digDown()
+                    turtle.select(blockSlot)
+                    if not turtle.placeDown() then
+                        print("Failed to place replacement block!")
+                    end
+                end
+            end
+            
+            -- Move forward
+            if not turtle.forward() then
+                print("Stuck! Can't move forward")
+                break
+            end
+        end
+
+        -- Turn left after each side
+        turtle.turnLeft()
+    end
+
+    -- Wait 1 minute between full squares
+    os.sleep(60)
+end
+
+print("Out of replacement blocks!")
